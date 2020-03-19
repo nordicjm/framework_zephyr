@@ -1,35 +1,28 @@
-//=============================================================================
-//! @file FrameworkMacros.h
-//!
-//! @brief Macros for commonly performed actions.
-//!
-//! @copyright Copyright 2020 Laird
-//!            All Rights Reserved.
-//=============================================================================
-
-#ifndef FRAMEWORK_MACROS_H
-#define FRAMEWORK_MACROS_H
+/**
+ * @file FrameworkMacros.h
+ * @brief Macros for commonly performed actions.
+ *
+ * Copyright (c) 2020 Laird Connectivity
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#ifndef __FRAMEWORK_MACROS_H__
+#define __FRAMEWORK_MACROS_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-//=============================================================================
-// Includes
-//=============================================================================
-
-#ifndef FRAMEWORK_H
+/******************************************************************************/
+/* Includes                                                                   */
+/******************************************************************************/
+#ifndef __FRAMEWORK_H__
 #error "One cannot use the macros without the Framework"
 #endif
 
-//=============================================================================
-// Global Constants, Macros and Type Definitions
-//=============================================================================
-
-//=============================================================================
-//  Header and Allocation
-//=============================================================================
-
+/******************************************************************************/
+/* Header and Allocation                                                      */
+/******************************************************************************/
 #define FRAMEWORK_MSG_HEADER_INIT(p, c, i)                                     \
 	do {                                                                   \
 		FRAMEWORK_ASSERT((p) != NULL);                                 \
@@ -45,12 +38,11 @@ extern "C" {
 		}                                                              \
 	} while (0)
 
-//=============================================================================
-//  Message Send
-//=============================================================================
+/******************************************************************************/
+/* Message Send                                                               */
+/******************************************************************************/
 
-// Sends a message without a payload to oneself without using msg router
-
+/* Sends a message without a payload to oneself without using msg router */
 #define FRAMEWORK_MSG_SEND_DIRECT_TO_SELF(task, code)                          \
 	do {                                                                   \
 		BaseType_t macroResult = FWK_ERROR;                            \
@@ -76,7 +68,7 @@ extern "C" {
 		FRAMEWORK_ASSERT(macroResult == FWK_SUCCESS);                  \
 	} while (0)
 
-// Try means do not assert if the queue is full.
+/* Try means do not assert if the queue is full. */
 #define FRAMEWORK_MSG_TRY_TO_SEND(pMacroMsg)                                   \
 	do {                                                                   \
 		BaseType_t macroResult = Framework_Send(                       \
@@ -163,6 +155,4 @@ extern "C" {
 }
 #endif
 
-#endif
-
-// end
+#endif /* __FRAMEWORK_MACROS_H__ */
