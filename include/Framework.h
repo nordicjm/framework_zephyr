@@ -138,6 +138,18 @@ typedef struct FwkMsgTask {
 	TickType_t timerPeriodTicks; /* Second time (0 for one shot) */
 } FwkMsgTask_t;
 
+/**
+ * @brief Get pointer to object containing task (in dispatcher context).
+ *
+ * Example:
+ * DispatchResult_t MsgHandler(FwkMsgReceiver_t *pMsgRxer, FwkMsg_t *pMsg)
+ * {
+ *   TaskObj_t *pObj = FWK_TASK_CONTAINER(TaskObj_t);
+ * }
+ */
+#define FWK_TASK_CONTAINER(_obj_)                                              \
+	CONTAINER_OF(CONTAINER_OF(pMsgRxer, FwkMsgTask_t, rxer), _obj_, msgTask)
+
 /******************************************************************************/
 /* Global Function Prototypes                                                 */
 /******************************************************************************/
@@ -222,7 +234,21 @@ BaseType_t Framework_Queue(FwkQueue_t *pQueue, void *ppData,
 BaseType_t Framework_QueueIsEmpty(FwkId_t RxId);
 
 /**
+ * @brief Free all messages in a receiver's queue.
+ *
+ * @retval Number of messages that were purged.
+ */
+size_t Framework_Flush(FwkId_t RxId);
+
+/**
  * @brief Blocks on queue waiting for a message.
+ *
+ * @note If the caller checks that *ppData is not NULL
+ * (without checking return), then it must initialize *ppData.
+ * Example:
+ * FwkMsg_t *pMsg = NULL;
+ * Framework_Receive(q, &pMsg, 0);
+ * if (pMsg != NULL) { ...
  *
  * @note Only needed in special cases.
  * This function is called by Framework_MsgReceiver.

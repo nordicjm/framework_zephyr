@@ -21,6 +21,8 @@ typedef struct MsgTaskArrayEntry {
 	bool inUse;
 } MsgTaskArrayEntry_t;
 
+#define FIRST_VALID_FWK_ID (FWK_ID_RESERVED + 1)
+
 /******************************************************************************/
 /* Local Function Prototypes                                                  */
 /******************************************************************************/
@@ -82,10 +84,10 @@ BaseType_t Framework_Unicast(FwkMsg_t *pMsg)
 
 	BaseType_t result = FWK_ERROR;
 	u32_t i;
-	for (i = 0; i < FRAMEWORK_MAX_MSG_RECEIVERS; i++) {
+	for (i = FIRST_VALID_FWK_ID; i < FRAMEWORK_MAX_MSG_RECEIVERS; i++) {
 		FwkMsgReceiver_t *pMsgRxer = msgTaskRegistry[i].pMsgReceiver;
 
-		if (pMsgRxer != NULL) {
+		if (pMsgRxer != NULL && pMsgRxer->pMsgDispatcher != NULL) {
 			/* The handler isn't called here.
 			 * It is only used to find the task the message belongs to. */
 			FwkMsgHandler_t msgHandler =
@@ -115,7 +117,7 @@ int Framework_Broadcast(FwkMsg_t *pMsg, size_t MsgSize)
 	BaseType_t result = FWK_ERROR;
 
 	u32_t i;
-	for (i = 0; i < FRAMEWORK_MAX_MSG_RECEIVERS; i++) {
+	for (i = FIRST_VALID_FWK_ID; i < FRAMEWORK_MAX_MSG_RECEIVERS; i++) {
 		FwkMsgReceiver_t *pMsgRxer = msgTaskRegistry[i].pMsgReceiver;
 
 		if (pMsgRxer != NULL && pMsgRxer->pMsgDispatcher != NULL) {
@@ -237,6 +239,32 @@ BaseType_t Framework_QueueIsEmpty(FwkId_t RxId)
 
 	FwkQueue_t *pQueue = msgTaskRegistry[RxId].pMsgReceiver->pQueue;
 	return ((k_msgq_num_used_get(pQueue) == 0) ? 1 : 0);
+}
+
+size_t Framework_Flush(FwkId_t RxId)
+{
+	if (RxId >= FRAMEWORK_MAX_MSG_RECEIVERS) {
+		return 0;
+	}
+
+	if (!msgTaskRegistry[RxId].inUse) {
+		return 0;
+	}
+
+	FwkMsg_t *pMsg;
+	size_t purged = 0;
+	while (true) {
+		pMsg = NULL;
+		k_msgq_get(msgTaskRegistry[RxId].pMsgReceiver->pQueue, &pMsg,
+			   K_NO_WAIT);
+		if (pMsg != NULL) {
+			BufferPool_Free(pMsg);
+			purged += 1;
+		} else {
+			break;
+		}
+	}
+	return purged;
 }
 
 /******************************************************************************/

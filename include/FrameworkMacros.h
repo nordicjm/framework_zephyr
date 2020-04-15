@@ -42,18 +42,20 @@ extern "C" {
 /* Message Send                                                               */
 /******************************************************************************/
 
-/* Sends a message without a payload to oneself without using msg router */
-#define FRAMEWORK_MSG_SEND_DIRECT_TO_SELF(task, code)                          \
+/** @brief Creates and sends a message without a payload to oneself without
+ * using msg router */
+#define FRAMEWORK_MSG_SEND_TO_SELF(task, code)                                 \
 	do {                                                                   \
 		BaseType_t macroResult = FWK_ERROR;                            \
 		FwkMsg_t *pMacroMsg =                                          \
 			(FwkMsg_t *)BufferPool_Take(sizeof(FwkMsg_t));         \
 		FRAMEWORK_ASSERT(pMacroMsg != NULL);                           \
 		if (pMacroMsg != NULL) {                                       \
-			FRAMEWORK_MSG_HEADER_INIT(pMacroMsg, (code), task.id); \
-			pMacroMsg->header.rxId = task.id;                      \
-			macroResult = Framework_Queue(task.pQueue, &pMacroMsg, \
-						      K_NO_WAIT);              \
+			FRAMEWORK_MSG_HEADER_INIT(pMacroMsg, (code),           \
+						  (task).rxer.id);             \
+			pMacroMsg->header.rxId = (task).rxer.id;               \
+			macroResult = Framework_Queue((task).rxer.pQueue,      \
+						      &pMacroMsg, K_NO_WAIT);  \
 			FRAMEWORK_MSG_DEALLOCATE_IF_UNSENT(macroResult,        \
 							   pMacroMsg);         \
 			FRAMEWORK_ASSERT(macroResult == FWK_SUCCESS);          \
@@ -130,7 +132,7 @@ extern "C" {
 		if (pMacroMsg != NULL) {                                       \
 			pMacroMsg->header.msgCode = (code);                    \
 			pMacroMsg->header.txId = (id);                         \
-			pMacroMsg->header.rxId = FRAMEWORK_TASK_ID_RESERVED;   \
+			pMacroMsg->header.rxId = FWK_ID_RESERVED;              \
 			BaseType_t macroStatus = Framework_Broadcast(          \
 				(FwkMsg_t *)pMacroMsg, macroMsgSize);          \
 			if (macroStatus != FWK_SUCCESS) {                      \
