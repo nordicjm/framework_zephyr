@@ -24,6 +24,7 @@ extern "C" {
 #include "FrameworkMsgCodes.h"
 #include "FrameworkMsgConfiguration.h"
 #include "FrameworkMsgTypes.h"
+#include "FrameworkMsg.h"
 #include "FrameworkMacros.h"
 #include "BufferPool.h"
 
