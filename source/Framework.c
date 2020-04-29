@@ -183,13 +183,12 @@ BaseType_t Framework_Queue(FwkQueue_t *pQueue, void *ppData,
 			   TickType_t BlockTicks)
 {
 	FRAMEWORK_ASSERT(pQueue != NULL);
-	FRAMEWORK_ASSERT(ppData != NULL);
 	if (ppData == NULL) {
 		FRAMEWORK_ASSERT(false);
 		return FWK_ERROR;
 	}
 
-	FwkMsg_t *pMsg = (FwkMsg_t *)ppData;
+	FwkMsg_t *pMsg = *((FwkMsg_t **)ppData);
 	if (pMsg == NULL) {
 		FRAMEWORK_ASSERT(false);
 		return FWK_ERROR;
