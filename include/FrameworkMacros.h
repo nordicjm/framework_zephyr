@@ -17,9 +17,8 @@ extern "C" {
 /******************************************************************************/
 /* Includes                                                                   */
 /******************************************************************************/
-#ifndef __FRAMEWORK_H__
-#error "One cannot use the macros without the Framework"
-#endif
+#include "Framework.h"
+#include "FrameworkMsg.h"
 
 /******************************************************************************/
 /* Macro Definitions                                                          */

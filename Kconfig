@@ -1,0 +1,89 @@
+#
+# Copyright (c) 2020 Laird Connectivity
+#
+# It is provided "as is", without warranty/guarantee of any kind, express of
+# implied, including but not limited to the warranties of merchantability,
+# fitness for a particular purpose and non-infringement.
+#
+
+menuconfig FRAMEWORK
+     bool "Laird Connectivity Message Framework"
+	 default y
+	 select BUFFER_POOL
+	 help
+	 	Inter-task communication using messages
+
+if FRAMEWORK
+
+choice
+     prompt "Framework Assertion"
+     optional
+	 help
+	 	The default is disabled.
+
+config FWK_ASSERT_ENABLED
+     bool "Enable Framework assertion"
+
+config FWK_ASSERT_ENABLED_USE_ZEPHYR
+     bool "Framework assertion maps to Zephyr assertion"
+	 help
+	 	The framework assertion is enabled if Zephyr assertions are enabled.
+
+endchoice
+
+#if FWK_ASSERT_ENABLED || FWK_ASSERT_ENABLED_USE_ZEPHYR
+
+config FWK_DEBUG
+	bool "Enable Framework Debug (and debug assertions)"
+
+config FWK_ASSERT_ON_BROADCAST_FROM_ISR
+	bool "Assert when a broadcast msg occurs in ISR context"
+	default y
+	help
+		Broadcast can be time consuming on some processors.
+
+#endif # FWK_ASSERT_ENABLED || FWK_ASSERT_ENABLED_USE_ZEPHYR
+
+config FWK_RESET_DELAY_MS
+	int "Delay before software reset (from an assertion or reset message)"
+	default 5000
+
+config FWK_MAX_MSG_RECEIVERS
+	int "The maximum number of messages receivers"
+	default 4
+
+menuconfig BUFFER_POOL
+     bool "Zephyr memory pool used by the framework"
+
+if BUFFER_POOL
+
+config BUFFER_POOL_MINSZ
+	int "Size of the smallest blocks in the pool (in bytes)"
+	default 4
+	help
+		This should be the same size as the framework message header.
+
+config BUFFER_POOL_MAXSZ
+	int "Size of the largest blocks in the pool (in bytes)"
+	default 4096
+
+config BUFFER_POOL_NMAX
+	int "Number of maximum sized blocks in the pool"
+	default 8
+
+# Alignment of the pool's buffer (power of 2)
+config BUFFER_POOL_ALIGN
+	int
+	default 4
+
+endif # BUFFER_POOL
+
+config BRACKET_INTERCEPTS_ESCAPED_FORWARD_SLASH
+	bool "Bracket handler replaces '\/' with '/'"
+	default y
+	help
+		iOS escapes '/' with "\/"
+		If this is intercepted by the bracket handler,
+		then the buffer sizes don't need to be doubled to handle a base-64 encoded image.
+
+endif # FRAMEWORK

@@ -14,6 +14,9 @@
 /******************************************************************************/
 /* Includes                                                                   */
 /******************************************************************************/
+#include <string.h>
+
+#include "BufferPool.h"
 #include "Framework.h"
 
 /******************************************************************************/
@@ -24,14 +27,12 @@ typedef struct MsgTaskArrayEntry {
 	bool inUse;
 } MsgTaskArrayEntry_t;
 
-#define FIRST_VALID_FWK_ID (FWK_ID_RESERVED + 1)
-
 /******************************************************************************/
 /* Local Function Prototypes                                                  */
 /******************************************************************************/
 static void PeriodicTimerCallbackIsr(struct k_timer *pArg);
 
-static MsgTaskArrayEntry_t msgTaskRegistry[FRAMEWORK_MAX_MSG_RECEIVERS];
+static MsgTaskArrayEntry_t msgTaskRegistry[CONFIG_FWK_MAX_MSG_RECEIVERS];
 
 /******************************************************************************/
 /* Global Function Definitions                                                */
@@ -46,8 +47,8 @@ void Framework_Initialize(void)
 void Framework_RegisterReceiver(FwkMsgReceiver_t *pRxer)
 {
 	FRAMEWORK_ASSERT(pRxer != NULL);
-	FRAMEWORK_ASSERT(pRxer->id < FRAMEWORK_MAX_MSG_RECEIVERS);
-	if (pRxer->id >= FRAMEWORK_MAX_MSG_RECEIVERS) {
+	FRAMEWORK_ASSERT(pRxer->id < CONFIG_FWK_MAX_MSG_RECEIVERS);
+	if (pRxer->id >= CONFIG_FWK_MAX_MSG_RECEIVERS) {
 		return;
 	}
 
@@ -79,7 +80,7 @@ BaseType_t Framework_Send(FwkId_t RxId, FwkMsg_t *pMsg)
 	if (pMsg == NULL) {
 		return result;
 	}
-	if (RxId >= FRAMEWORK_MAX_MSG_RECEIVERS) {
+	if (RxId >= CONFIG_FWK_MAX_MSG_RECEIVERS) {
 		return result;
 	}
 	if (!msgTaskRegistry[RxId].inUse) {
@@ -103,7 +104,7 @@ BaseType_t Framework_Unicast(FwkMsg_t *pMsg)
 	}
 
 	u32_t i;
-	for (i = FIRST_VALID_FWK_ID; i < FRAMEWORK_MAX_MSG_RECEIVERS; i++) {
+	for (i = FWK_ID_APP_START; i < CONFIG_FWK_MAX_MSG_RECEIVERS; i++) {
 		FwkMsgReceiver_t *pMsgRxer = msgTaskRegistry[i].pMsgReceiver;
 
 		if (pMsgRxer != NULL && pMsgRxer->pMsgDispatcher != NULL) {
@@ -133,13 +134,13 @@ int Framework_Broadcast(FwkMsg_t *pMsg, size_t MsgSize)
 		return result;
 	}
 
-#if FWK_ALLOW_BROADCAST_FROM_ISR
+#if CONFIG_FWK_ASSERT_ON_BROADCAST_FROM_ISR
 	/* It is technically possible to broadcast from ISR, but isn't recommended. */
 	FRAMEWORK_ASSERT(!Framework_InterruptContext());
 #endif
 
 	u32_t i;
-	for (i = FIRST_VALID_FWK_ID; i < FRAMEWORK_MAX_MSG_RECEIVERS; i++) {
+	for (i = FWK_ID_APP_START; i < CONFIG_FWK_MAX_MSG_RECEIVERS; i++) {
 		FwkMsgReceiver_t *pMsgRxer = msgTaskRegistry[i].pMsgReceiver;
 
 		if (pMsgRxer != NULL && pMsgRxer->pMsgDispatcher != NULL) {
@@ -269,7 +270,7 @@ void Framework_MsgReceiver(FwkMsgReceiver_t *pRxer)
 
 BaseType_t Framework_QueueIsEmpty(FwkId_t RxId)
 {
-	if (RxId >= FRAMEWORK_MAX_MSG_RECEIVERS) {
+	if (RxId >= CONFIG_FWK_MAX_MSG_RECEIVERS) {
 		return 1;
 	}
 	if (!msgTaskRegistry[RxId].inUse) {
@@ -282,7 +283,7 @@ BaseType_t Framework_QueueIsEmpty(FwkId_t RxId)
 
 size_t Framework_Flush(FwkId_t RxId)
 {
-	if (RxId >= FRAMEWORK_MAX_MSG_RECEIVERS) {
+	if (RxId >= CONFIG_FWK_MAX_MSG_RECEIVERS) {
 		return 0;
 	}
 	if (!msgTaskRegistry[RxId].inUse) {
@@ -315,8 +316,13 @@ static void PeriodicTimerCallbackIsr(struct k_timer *pArg)
 
 	FwkMsg_t *pMsg = (FwkMsg_t *)BufferPool_Take(sizeof(FwkMsg_t));
 	if (pMsg != NULL) {
-		FRAMEWORK_MSG_HEADER_INIT(pMsg, FMC_PERIODIC,
-					  pMsgTask->rxer.id);
-		FRAMEWORK_MSG_SEND_TO(pMsgTask->rxer.id, pMsg);
+		pMsg->header.msgCode = FMC_PERIODIC;
+		pMsg->header.txId = pMsgTask->rxer.id;
+		pMsg->header.rxId = pMsgTask->rxer.id;
+		BaseType_t result = Framework_Send(pMsgTask->rxer.id, pMsg);
+		if (result != FWK_SUCCESS) {
+			BufferPool_Free(pMsg);
+		}
+		FRAMEWORK_ASSERT(result == FWK_SUCCESS);
 	}
 }

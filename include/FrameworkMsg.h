@@ -22,9 +22,7 @@ extern "C" {
 /******************************************************************************/
 /* Includes                                                                   */
 /******************************************************************************/
-#ifndef __FRAMEWORK_H__
-#error "One cannot use these functions without the Framework"
-#endif
+#include "Framework.h"
 
 /******************************************************************************/
 /* Local Constant, Macro and Type Definitions                                 */

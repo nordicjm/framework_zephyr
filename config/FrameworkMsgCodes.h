@@ -15,21 +15,24 @@ extern "C" {
 #endif
 
 /******************************************************************************/
+/* Includes                                                                   */
+/******************************************************************************/
+#include "Framework.h"
+
+/******************************************************************************/
 /* Global Constants, Macros and Type Definitions                              */
 /******************************************************************************/
-typedef enum FwkMsgCodeEnum {
-	/* Reserved by Framework (DO NOT DELETE) */
-	FMC_INVALID = 0,
-	FMC_PERIODIC,
-	FMC_SOFTWARE_RESET,
-	FMC_WATCHDOG_CHALLENGE,
-	FMC_WATCHDOG_RESPONSE,
-
-	/* Application Specific */
+enum FwkMsgCodeEnum {
+	/* The first application specific message should be assigned the value
+	 * FMC_APPLICATION_SPECIFIC_START.  There are codes reserved by framework.
+	 */
+	FMC_ADV = FMC_APPLICATION_SPECIFIC_START,
 
 	/* Last value (DO NOT DELETE) */
 	NUMBER_OF_FRAMEWORK_MSG_CODES
-} FwkMsgCode_t;
+};
+BUILD_ASSERT_MSG(sizeof(enum FwkMsgCodeEnum) <= sizeof(FwkMsgCode_t),
+		 "Too many message codes");
 
 
 #ifdef __cplusplus

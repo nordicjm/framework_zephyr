@@ -16,8 +16,9 @@
 /******************************************************************************/
 /* Local Data Definitions                                                     */
 /******************************************************************************/
-K_MEM_POOL_DEFINE(bufferPool, BUFFER_POOL_MINSZ, BUFFER_POOL_MAXSZ,
-		  BUFFER_POOL_NMAX, BUFFER_POOL_ALIGN);
+K_MEM_POOL_DEFINE(bufferPool, CONFIG_BUFFER_POOL_MINSZ,
+		  CONFIG_BUFFER_POOL_MAXSZ, CONFIG_BUFFER_POOL_NMAX,
+		  CONFIG_BUFFER_POOL_ALIGN);
 
 static atomic_t takeFailed = ATOMIC_INIT(0);
 

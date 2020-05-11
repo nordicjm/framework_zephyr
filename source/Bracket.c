@@ -15,19 +15,13 @@ LOG_MODULE_REGISTER(Bracket);
 /* Includes                                                                   */
 /******************************************************************************/
 #include <stdlib.h>
+#include <string.h>
 
 #include "Bracket.h"
 
 /******************************************************************************/
 /* Local Constant, Macro and Type Definitions                                 */
 /******************************************************************************/
-/* iOS escapes '/' with '\' '/'
- * If this is intercepted here, then the buffer sizes don't need to be doubled
- * to handle a base-64 encoded image. */
-#ifndef BRACKET_INTERCEPTS_ESCAPED_FORWARD_SLASH
-#define BRACKET_INTERCEPTS_ESCAPED_FORWARD_SLASH 1
-#endif
-
 struct BracketObject {
 	size_t size;
 	size_t length;
@@ -36,6 +30,9 @@ struct BracketObject {
 	char buffer[];
 };
 
+/******************************************************************************/
+/* Global Function Definitions                                                */
+/******************************************************************************/
 BracketObj_t *Bracket_Initialize(size_t Size)
 {
 	size_t s = sizeof(BracketObj_t) + Size;
@@ -88,7 +85,7 @@ int Bracket_Compute(BracketObj_t *p, char Character)
 
 		p->buffer[p->length++] = Character;
 
-#if BRACKET_INTERCEPTS_ESCAPED_FORWARD_SLASH
+#if CONFIG_BRACKET_INTERCEPTS_ESCAPED_FORWARD_SLASH
 		if (p->length >= 2) {
 			if (p->buffer[p->length - 2] == '\\' &&
 			    p->buffer[p->length - 1] == '/') {

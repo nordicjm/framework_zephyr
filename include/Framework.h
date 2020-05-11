@@ -20,14 +20,6 @@ extern "C" {
 #include <zephyr/types.h>
 #include <kernel.h>
 
-#include "FrameworkIds.h"
-#include "FrameworkMsgCodes.h"
-#include "FrameworkMsgConfiguration.h"
-#include "FrameworkMsgTypes.h"
-#include "FrameworkMsg.h"
-#include "FrameworkMacros.h"
-#include "BufferPool.h"
-
 /******************************************************************************/
 /* Readability                                                                */
 /******************************************************************************/
@@ -61,37 +53,30 @@ extern "C" {
 #endif
 
 /******************************************************************************/
-/* Framework Default Configuration                                            */
-/******************************************************************************/
-#ifndef FWK_DEBUG
-#define FWK_DEBUG 0
-#endif
-
-#ifndef FWK_ASSERT_ENABLED
-#define FWK_ASSERT_ENABLED 1
-#endif
-
-#ifndef FWK_USES_ZEPHYR_ASSERT
-#define FWK_USES_ZEPHYR_ASSERT 0
-#endif
-
-#ifndef FWK_ALLOW_BROADCAST_FROM_ISR
-#define FWK_ALLOW_BROADCAST_FROM_ISR 0
-#endif
-
-#define FWK_DEFAULT_RESET_DELAY_MS 5000
-
-#define PERIODIC_TIMER_IS_ONE_SHOT 0
-
-/******************************************************************************/
 /* Global Constants, Macros and Type Definitions                              */
 /******************************************************************************/
+
+typedef u8_t FwkMsgCode_t;
+typedef u8_t FwkId_t;
+
 /* Zephyr kernel queue functions use int and return 0 for success */
 #define BaseType_t int
 
 /* Zephyr kernel time base is ms, @ref K_NO_WAIT, @ref K_FOREVER
  * It is unclear why this is signed. */
 #define TickType_t s32_t
+
+/* Framework Message Codes (FMC)
+ * Application specific codes are defined in config/FrameworkMsgCodes.h.
+ */
+/* clang-format off */
+#define FMC_INVALID                    0
+#define FMC_PERIODIC                   1
+#define FMC_SOFTWARE_RESET             2
+#define FMC_WATCHDOG_CHALLENGE         3
+#define FMC_WATCHDOG_RESPONSE          4
+#define FMC_APPLICATION_SPECIFIC_START 8
+/* clang-format on */
 
 typedef enum FwkStatusEnum { FWK_SUCCESS = 0, FWK_ERROR } FwkStatus_t;
 
@@ -101,9 +86,30 @@ typedef enum DispatchResultEnum {
 	DISPATCH_DO_NOT_FREE,
 } DispatchResult_t;
 
+typedef struct FwkMsgHeader {
+	FwkMsgCode_t msgCode;
+	FwkId_t rxId;
+	FwkId_t txId;
+	u8_t payloadByte; /* for alignment */
+} FwkMsgHeader_t;
+BUILD_ASSERT_MSG(sizeof(FwkMsgHeader_t) == 4, "Unexpected Header Size");
+
+typedef struct FwkMsg {
+	FwkMsgHeader_t header;
+	/* Optional Payload */
+} FwkMsg_t;
+
+/* A generic framework message with a buffer */
+typedef struct FwkBufMsg {
+	FwkMsgHeader_t header;
+	size_t size; /** number of bytes allocated for buffer */
+	size_t length; /** number of used bytes in buffer */
+	u8_t buffer[]; /** size is determined by allocator */
+} FwkBufMsg_t;
+
 /*
  * Each message task has a message handler or dispatcher.
- * The dispatcher should be enabled using a case statement
+ * The dispatcher should be implemented using a case statement
  * so that the number of messages doesn't
  * affect the time to determine what handler to call.
  */
@@ -150,6 +156,21 @@ typedef struct FwkMsgTask {
  */
 #define FWK_TASK_CONTAINER(_obj_)                                              \
 	CONTAINER_OF(CONTAINER_OF(pMsgRxer, FwkMsgTask_t, rxer), _obj_, msgTask)
+
+#define FWK_BUFFER_MSG_SIZE(t, s) (sizeof(t) + (s))
+
+#define CHECK_BUFFER_SIZE(x)                                                   \
+	BUILD_ASSERT_MSG(x <= CONFIG_BUFFER_POOL_MAXSZ,                        \
+			 "Buffer Pool Max size is too small")
+
+#define CHECK_FWK_MSG_SIZE(m) CHECK_BUFFER_SIZE(sizeof(m))
+
+#define FWK_QUEUE_ENTRY_SIZE (sizeof(FwkMsg_t *))
+#define FWK_QUEUE_ALIGNMENT 4 /* bytes */
+
+/* Routing a message to task id 0 indicates a problem */
+#define FWK_ID_RESERVED 0
+#define FWK_ID_APP_START 1
 
 /******************************************************************************/
 /* Global Function Prototypes                                                 */
@@ -285,9 +306,9 @@ extern DispatchResult_t Framework_UnknownMsgHandler(FwkMsgReceiver_t *pMsgRxer,
 /* Framework Assertions                                                       */
 /******************************************************************************/
 /* clang-format off */
-#if FWK_USES_ZEPHYR_ASSERT
+#if CONFIG_FWK_ASSERT_ENABLED_USE_ZEPHYR
 	#define FRAMEWORK_ASSERT(expr) __ASSERT(expr, "Framwork Assertion")
-#elif FWK_ASSERT_ENABLED
+#elif CONFIG_FWK_ASSERT_ENABLED
 	/* Shortened file names make it easier to support assertions that
 	 * print the file name on processors with limited flash space. */
 	#ifndef FNAME
@@ -309,7 +330,7 @@ extern DispatchResult_t Framework_UnknownMsgHandler(FwkMsgReceiver_t *pMsgRxer,
  * This is for backward compatibility.
  * Zephyr's __ASSERT_EVAL could be used instead.
  */
-#if FWK_DEBUG
+#if CONFIG_FWK_DEBUG
 	#define FRAMEWORK_DEBUG_ASSERT(expr) FRAMEWORK_ASSERT(expr)
 #else
 	#define FRAMEWORK_DEBUG_ASSERT(expr)
