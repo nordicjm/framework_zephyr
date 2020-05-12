@@ -36,10 +36,12 @@ typedef struct BracketObject BracketObj_t;
  * @brief Allocates memory for and initializes a bracket handler.
  *
  * @param Size of the buffer
+ * @param p is a pointer to buffer used for object.  The buffer must be aligned
+ * to a 4-byte boundary.
  *
- * @retval pointer to bracket object
+ * @retval pointer to bracket object, NULL if there was an error.
  */
-BracketObj_t *Bracket_Initialize(size_t Size);
+BracketObj_t *Bracket_Initialize(size_t Size, void *p);
 
 /**
  * @brief Resets bracket (delta and index).

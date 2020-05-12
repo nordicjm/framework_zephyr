@@ -33,13 +33,25 @@ struct BracketObject {
 /******************************************************************************/
 /* Global Function Definitions                                                */
 /******************************************************************************/
-BracketObj_t *Bracket_Initialize(size_t Size)
+BracketObj_t *Bracket_Initialize(size_t Size, void *p)
 {
-	size_t s = sizeof(BracketObj_t) + Size;
-	BracketObj_t *ptr = (BracketObj_t *)k_calloc(s, sizeof(char));
-	Bracket_Reset(ptr);
-	ptr->size = Size;
-	return ptr;
+	__ASSERT(p != NULL, "Attempt to initialize bracket with NULL pointer");
+	__ASSERT((POINTER_TO_UINT(p) & 3) == 0,
+		 "Buffer must be aligned to a 4-byte boundary");
+	__ASSERT(Size > sizeof(BracketObj_t),
+		 "Attempt to initialize bracket with too small of a buffer");
+
+	if ((Size > sizeof(BracketObj_t)) && (p != NULL) &&
+	    ((POINTER_TO_UINT(p) & 3) == 0)) {
+		memset(p, 0, Size);
+		size_t s = Size - sizeof(BracketObj_t);
+		BracketObj_t *ptr = (BracketObj_t *)p;
+		Bracket_Reset(ptr);
+		ptr->size = s;
+		return ptr;
+	} else {
+		return NULL;
+	}
 }
 
 void Bracket_Reset(BracketObj_t *p)
