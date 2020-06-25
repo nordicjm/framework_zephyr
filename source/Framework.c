@@ -103,7 +103,7 @@ BaseType_t Framework_Unicast(FwkMsg_t *pMsg)
 		return result;
 	}
 
-	u32_t i;
+	uint32_t i;
 	for (i = FWK_ID_APP_START; i < CONFIG_FWK_MAX_MSG_RECEIVERS; i++) {
 		FwkMsgReceiver_t *pMsgRxer = msgTaskRegistry[i].pMsgReceiver;
 
@@ -139,7 +139,7 @@ int Framework_Broadcast(FwkMsg_t *pMsg, size_t MsgSize)
 	FRAMEWORK_ASSERT(!Framework_InterruptContext());
 #endif
 
-	u32_t i;
+	uint32_t i;
 	for (i = FWK_ID_APP_START; i < CONFIG_FWK_MAX_MSG_RECEIVERS; i++) {
 		FwkMsgReceiver_t *pMsgRxer = msgTaskRegistry[i].pMsgReceiver;
 

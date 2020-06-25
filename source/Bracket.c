@@ -25,7 +25,7 @@ LOG_MODULE_REGISTER(Bracket);
 struct BracketObject {
 	size_t size;
 	size_t length;
-	s32_t delta;
+	int32_t delta;
 	bool entered;
 	char buffer[];
 };

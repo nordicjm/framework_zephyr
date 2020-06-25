@@ -16,8 +16,6 @@ extern "C" {
 /******************************************************************************/
 /* Includes                                                                   */
 /******************************************************************************/
-#include <misc/util.h>
-#include <zephyr/types.h>
 #include <kernel.h>
 
 /******************************************************************************/
@@ -56,15 +54,15 @@ extern "C" {
 /* Global Constants, Macros and Type Definitions                              */
 /******************************************************************************/
 
-typedef u8_t FwkMsgCode_t;
-typedef u8_t FwkId_t;
+typedef uint8_t FwkMsgCode_t;
+typedef uint8_t FwkId_t;
 
 /* Zephyr kernel queue functions use int and return 0 for success */
 #define BaseType_t int
 
 /* Zephyr kernel time base is ms, @ref K_NO_WAIT, @ref K_FOREVER
  * It is unclear why this is signed. */
-#define TickType_t s32_t
+#define TickType_t int32_t
 
 /* Framework Message Codes (FMC)
  * Application specific codes are defined in config/FrameworkMsgCodes.h.
@@ -90,7 +88,7 @@ typedef struct FwkMsgHeader {
 	FwkMsgCode_t msgCode;
 	FwkId_t rxId;
 	FwkId_t txId;
-	u8_t payloadByte; /* for alignment */
+	uint8_t payloadByte; /* for alignment */
 } FwkMsgHeader_t;
 BUILD_ASSERT_MSG(sizeof(FwkMsgHeader_t) == 4, "Unexpected Header Size");
 
@@ -104,7 +102,7 @@ typedef struct FwkBufMsg {
 	FwkMsgHeader_t header;
 	size_t size; /** number of bytes allocated for buffer */
 	size_t length; /** number of used bytes in buffer */
-	u8_t buffer[]; /** size is determined by allocator */
+	uint8_t buffer[]; /** size is determined by allocator */
 } FwkBufMsg_t;
 
 /*
