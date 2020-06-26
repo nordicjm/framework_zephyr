@@ -60,9 +60,8 @@ typedef uint8_t FwkId_t;
 /* Zephyr kernel queue functions use int and return 0 for success */
 #define BaseType_t int
 
-/* Zephyr kernel time base is ms, @ref K_NO_WAIT, @ref K_FOREVER
- * It is unclear why this is signed. */
-#define TickType_t int32_t
+/* Zephyr kernel time base is ms, @ref K_NO_WAIT, @ref K_FOREVER */
+#define TickType_t k_timeout_t
 
 /* Framework Message Codes (FMC)
  * Application specific codes are defined in config/FrameworkMsgCodes.h.
@@ -90,7 +89,7 @@ typedef struct FwkMsgHeader {
 	FwkId_t txId;
 	uint8_t payloadByte; /* for alignment */
 } FwkMsgHeader_t;
-BUILD_ASSERT_MSG(sizeof(FwkMsgHeader_t) == 4, "Unexpected Header Size");
+BUILD_ASSERT(sizeof(FwkMsgHeader_t) == 4, "Unexpected Header Size");
 
 typedef struct FwkMsg {
 	FwkMsgHeader_t header;
@@ -158,7 +157,7 @@ typedef struct FwkMsgTask {
 #define FWK_BUFFER_MSG_SIZE(t, s) (sizeof(t) + (s))
 
 #define CHECK_BUFFER_SIZE(x)                                                   \
-	BUILD_ASSERT_MSG(x <= CONFIG_BUFFER_POOL_MAXSZ,                        \
+	BUILD_ASSERT(x <= CONFIG_BUFFER_POOL_MAXSZ,                        \
 			 "Buffer Pool Max size is too small")
 
 #define CHECK_FWK_MSG_SIZE(m) CHECK_BUFFER_SIZE(sizeof(m))
