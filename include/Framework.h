@@ -156,9 +156,12 @@ typedef struct FwkMsgTask {
 
 #define FWK_BUFFER_MSG_SIZE(t, s) (sizeof(t) + (s))
 
+/* Most framework messages are small.  This is a sanity check that at least
+ * one message can be allocated in addition to small messages.
+ */
 #define CHECK_BUFFER_SIZE(x)                                                   \
-	BUILD_ASSERT(x <= CONFIG_BUFFER_POOL_MAXSZ,                        \
-			 "Buffer Pool Max size is too small")
+	BUILD_ASSERT(x <= (CONFIG_BUFFER_POOL_SIZE / 2),                       \
+		     "Buffer Pool is too small")
 
 #define CHECK_FWK_MSG_SIZE(m) CHECK_BUFFER_SIZE(sizeof(m))
 

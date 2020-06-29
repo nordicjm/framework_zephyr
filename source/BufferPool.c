@@ -6,6 +6,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#define FWK_FNAME "BufferPool"
 
 /******************************************************************************/
 /* Includes                                                                   */
@@ -16,9 +17,7 @@
 /******************************************************************************/
 /* Local Data Definitions                                                     */
 /******************************************************************************/
-K_MEM_POOL_DEFINE(bufferPool, CONFIG_BUFFER_POOL_MINSZ,
-		  CONFIG_BUFFER_POOL_MAXSZ, CONFIG_BUFFER_POOL_NMAX,
-		  CONFIG_BUFFER_POOL_ALIGN);
+K_HEAP_DEFINE(bufferPool, CONFIG_BUFFER_POOL_SIZE);
 
 static atomic_t takeFailed = ATOMIC_INIT(0);
 
@@ -27,25 +26,26 @@ static atomic_t takeFailed = ATOMIC_INIT(0);
 /******************************************************************************/
 void BufferPool_Initialize(void)
 {
-	return; /* Everthing is done by MEM_POOL_DEFINE */
+	return; /* Everthing is done by K_HEAP_DEFINE */
+}
+
+void *BufferPool_TryToTakeTimeout(size_t Size, k_timeout_t Timeout)
+{
+	void *p = k_heap_alloc(&bufferPool, Size, Timeout);
+	if (p != NULL) {
+		memset(p, 0, Size);
+	}
+	return p;
 }
 
 void *BufferPool_TryToTake(size_t Size)
 {
-	int key = irq_lock();
-	void *p = k_mem_pool_malloc(&bufferPool, Size);
-	if (p != NULL) {
-		memset(p, 0, Size);
-	}
-	irq_unlock(key);
-	return p;
+	return BufferPool_TryToTakeTimeout(Size, K_NO_WAIT);
 }
 
 void *BufferPool_Take(size_t Size)
 {
-	int key = irq_lock();
 	void *ptr = BufferPool_TryToTake(Size);
-
 	if (ptr == NULL) {
 		/* Prevent recursive entry. */
 		if (atomic_get(&takeFailed) == 0) {
@@ -53,13 +53,10 @@ void *BufferPool_Take(size_t Size)
 			FRAMEWORK_ASSERT(FORCED);
 		}
 	}
-	irq_unlock(key);
 	return ptr;
 }
 
 void BufferPool_Free(void *pBuffer)
 {
-	int key = irq_lock();
-	k_free(pBuffer);
-	irq_unlock(key);
+	k_heap_free(&bufferPool, pBuffer);
 }

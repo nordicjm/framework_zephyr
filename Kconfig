@@ -9,7 +9,6 @@
 menuconfig FRAMEWORK
      bool "Laird Connectivity Message Framework"
 	 default y
-	 select BUFFER_POOL
 	 help
 	 	Inter-task communication using messages
 
@@ -31,7 +30,7 @@ config FWK_ASSERT_ENABLED_USE_ZEPHYR
 
 endchoice
 
-#if FWK_ASSERT_ENABLED || FWK_ASSERT_ENABLED_USE_ZEPHYR
+if FWK_ASSERT_ENABLED || FWK_ASSERT_ENABLED_USE_ZEPHYR
 
 config FWK_DEBUG
 	bool "Enable Framework Debug (and debug assertions)"
@@ -42,7 +41,7 @@ config FWK_ASSERT_ON_BROADCAST_FROM_ISR
 	help
 		Broadcast can be time consuming on some processors.
 
-#endif # FWK_ASSERT_ENABLED || FWK_ASSERT_ENABLED_USE_ZEPHYR
+endif # FWK_ASSERT_ENABLED || FWK_ASSERT_ENABLED_USE_ZEPHYR
 
 config FWK_RESET_DELAY_MS
 	int "Delay before software reset (from an assertion or reset message)"
@@ -52,31 +51,9 @@ config FWK_MAX_MSG_RECEIVERS
 	int "The maximum number of messages receivers"
 	default 4
 
-menuconfig BUFFER_POOL
-     bool "Zephyr memory pool used by the framework"
-
-if BUFFER_POOL
-
-config BUFFER_POOL_MINSZ
-	int "Size of the smallest blocks in the pool (in bytes)"
-	default 4
-	help
-		This should be the same size as the framework message header.
-
-config BUFFER_POOL_MAXSZ
-	int "Size of the largest blocks in the pool (in bytes)"
+config BUFFER_POOL_SIZE
+	int "Zephyr heap used by the framework"
 	default 4096
-
-config BUFFER_POOL_NMAX
-	int "Number of maximum sized blocks in the pool"
-	default 8
-
-# Alignment of the pool's buffer (power of 2)
-config BUFFER_POOL_ALIGN
-	int
-	default 4
-
-endif # BUFFER_POOL
 
 config BRACKET_INTERCEPTS_ESCAPED_FORWARD_SLASH
 	bool "Bracket handler replaces '\/' with '/'"

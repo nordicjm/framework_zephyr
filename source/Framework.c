@@ -10,6 +10,7 @@
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+#define FWK_FNAME "Framework"
 
 /******************************************************************************/
 /* Includes                                                                   */

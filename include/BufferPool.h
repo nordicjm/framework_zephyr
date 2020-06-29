@@ -16,6 +16,7 @@ extern "C" {
 /******************************************************************************/
 /* Includes                                                                   */
 /******************************************************************************/
+#include <kernel.h>
 #include <stddef.h>
 
 /******************************************************************************/
@@ -25,6 +26,14 @@ extern "C" {
  * @brief Prepares buffer pool for use.
  */
 void BufferPool_Initialize(void);
+
+/**
+ * @brief Waits up to Timeout to allocates a buffer of at least
+ * Size bytes and returns a pointer.
+ * The buffer is set to zero.
+ * This function won't assert if a buffer can't be taken.
+ */
+void *BufferPool_TryToTakeTimeout(size_t Size, k_timeout_t Timeout);
 
 /**
  * @brief Allocates a buffer of at least Size bytes and returns a pointer.
