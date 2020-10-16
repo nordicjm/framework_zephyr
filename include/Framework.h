@@ -307,7 +307,7 @@ extern DispatchResult_t Framework_UnknownMsgHandler(FwkMsgReceiver_t *pMsgRxer,
 /******************************************************************************/
 /* clang-format off */
 #if CONFIG_FWK_ASSERT_ENABLED_USE_ZEPHYR
-	#define FRAMEWORK_ASSERT(expr) __ASSERT(expr, "Framwork Assertion")
+	#define FRAMEWORK_ASSERT(expr) __ASSERT(expr, "Framework Assertion")
 #elif CONFIG_FWK_ASSERT_ENABLED
 	/* Shortened file names make it easier to support assertions that
 	 * print the file name on processors with limited flash space. */
