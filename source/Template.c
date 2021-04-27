@@ -2,14 +2,13 @@
  * @file Template.c
  * @brief Blank is better that repeating the information in header.
  *
- * Copyright (c) 2020 Laird Connectivity
+ * Copyright (c) 2021 Laird Connectivity
  *
  * SPDX-License-Identifier: Apache-2.0
  */
 
 #include <logging/log.h>
-#define LOG_LEVEL LOG_LEVEL_DBG
-LOG_MODULE_REGISTER(Template);
+LOG_MODULE_REGISTER(Template, CONFIG_LOG_LEVEL_TEMPLATE);
 
 /******************************************************************************/
 /* Includes                                                                   */

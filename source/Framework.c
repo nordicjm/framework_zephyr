@@ -6,7 +6,7 @@
  * The convention is to check that messages are pseudo-valid, but assume
  * queue/task objects are valid when framework assertions are turned off.
  *
- * Copyright (c) 2020 Laird Connectivity
+ * Copyright (c) 2021 Laird Connectivity
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -15,6 +15,7 @@
 /******************************************************************************/
 /* Includes                                                                   */
 /******************************************************************************/
+#include <init.h>
 #include <string.h>
 
 #include "BufferPool.h"
@@ -31,6 +32,8 @@ typedef struct MsgTaskArrayEntry {
 /******************************************************************************/
 /* Local Function Prototypes                                                  */
 /******************************************************************************/
+static int Framework_Initialize(const struct device *device);
+
 static void PeriodicTimerCallbackIsr(struct k_timer *pArg);
 
 static MsgTaskArrayEntry_t msgTaskRegistry[CONFIG_FWK_MAX_MSG_RECEIVERS];
@@ -38,12 +41,7 @@ static MsgTaskArrayEntry_t msgTaskRegistry[CONFIG_FWK_MAX_MSG_RECEIVERS];
 /******************************************************************************/
 /* Global Function Definitions                                                */
 /******************************************************************************/
-void Framework_Initialize(void)
-{
-	memset(msgTaskRegistry, 0, sizeof(msgTaskRegistry));
-
-	BufferPool_Initialize();
-}
+SYS_INIT(Framework_Initialize, POST_KERNEL, 0);
 
 void Framework_RegisterReceiver(FwkMsgReceiver_t *pRxer)
 {
@@ -305,6 +303,21 @@ size_t Framework_Flush(FwkId_t RxId)
 		}
 	}
 	return purged;
+}
+
+/******************************************************************************/
+/* Local Function Definitions                                                 */
+/******************************************************************************/
+/**
+ * @brief Initialize buffer pool (statistics).
+ */
+static int Framework_Initialize(const struct device *device)
+{
+	ARG_UNUSED(device);
+
+	BufferPool_Initialize();
+
+	return 0;
 }
 
 /******************************************************************************/

@@ -2,7 +2,7 @@
  * @file Framework.h
  * @brief Message Framework for intertask communication.
  *
- * Copyright (c) 2020 Laird Connectivity
+ * Copyright (c) 2021 Laird Connectivity
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -175,12 +175,6 @@ typedef struct FwkMsgTask {
 /******************************************************************************/
 /* Global Function Prototypes                                                 */
 /******************************************************************************/
-/**
- * @brief This function initializes the Message Fwk registry and
- * buffer pool.
- */
-void Framework_Initialize(void);
-
 /**
  * @brief This function registers a Message Task or Receiver with the
  * Message Framework.  This is necessary to support routing of
