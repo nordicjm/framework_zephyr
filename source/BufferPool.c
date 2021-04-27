@@ -2,54 +2,101 @@
  * @file BufferPool.c
  * @brief
  *
- * Copyright (c) 2020 Laird Connectivity
+ * Copyright (c) 2021 Laird Connectivity
  *
  * SPDX-License-Identifier: Apache-2.0
  */
+
 #define FWK_FNAME "BufferPool"
+#include <logging/log.h>
+LOG_MODULE_REGISTER(buffer_pool, LOG_LEVEL_ERR);
 
 /******************************************************************************/
 /* Includes                                                                   */
 /******************************************************************************/
 #include <string.h>
+
 #include "Framework.h"
+#include "BufferPool.h"
+
+/******************************************************************************/
+/* Local Constant, Macro and Type Definitions                                 */
+/******************************************************************************/
+struct bph {
+#ifdef CONFIG_BUFFER_POOL_CHECK_DOUBLE_FREE
+	void *ptr;
+#endif
+	uint16_t size;
+	uint8_t pool;
+	uint8_t reserved;
+} __packed;
+
+#define BPH_SIZE sizeof(struct bph)
 
 /******************************************************************************/
 /* Local Data Definitions                                                     */
 /******************************************************************************/
-K_HEAP_DEFINE(bufferPool, CONFIG_BUFFER_POOL_SIZE);
+static K_HEAP_DEFINE(buffer_pool, CONFIG_BUFFER_POOL_SIZE);
 
-static atomic_t takeFailed = ATOMIC_INIT(0);
+static atomic_t take_failed = ATOMIC_INIT(0);
+
+#ifdef CONFIG_BUFFER_POOL_STATS
+static struct bp_stats bps;
+#endif
+
+/******************************************************************************/
+/* Local Function Prototypes                                                  */
+/******************************************************************************/
+#ifdef CONFIG_BUFFER_POOL_STATS
+static void TakeStatHandler(struct bph *bph, size_t size);
+static void GiveStatHandler(struct bph *bph);
+#endif
 
 /******************************************************************************/
 /* Global Function Definitions                                                */
 /******************************************************************************/
 void BufferPool_Initialize(void)
 {
-	return; /* Everthing is done by K_HEAP_DEFINE */
-}
-
-void *BufferPool_TryToTakeTimeout(size_t Size, k_timeout_t Timeout)
-{
-	void *p = k_heap_alloc(&bufferPool, Size, Timeout);
-	if (p != NULL) {
-		memset(p, 0, Size);
+#ifdef CONFIG_BUFFER_POOL_STATS
+	if (!bps.initialized) {
+		bps.initialized = true;
+		bps.space_available = CONFIG_BUFFER_POOL_SIZE;
+		bps.min_space_available = CONFIG_BUFFER_POOL_SIZE;
+		bps.min_size = CONFIG_BUFFER_POOL_SIZE;
 	}
-	return p;
+#endif
 }
 
-void *BufferPool_TryToTake(size_t Size)
+void *BufferPool_TryToTakeTimeout(size_t size, k_timeout_t timeout)
 {
-	return BufferPool_TryToTakeTimeout(Size, K_NO_WAIT);
+	size_t size_with_header = size + BPH_SIZE;
+	uint8_t *p = k_heap_alloc(&buffer_pool, size_with_header, timeout);
+
+	if (p != NULL) {
+		memset(p, 0, size_with_header);
+#ifdef CONFIG_BUFFER_POOL_STATS
+		TakeStatHandler((struct bph *)p, size);
+#endif
+		return p + BPH_SIZE;
+	} else {
+		return p;
+	}
 }
 
-void *BufferPool_Take(size_t Size)
+void *BufferPool_TryToTake(size_t size)
 {
-	void *ptr = BufferPool_TryToTake(Size);
+	return BufferPool_TryToTakeTimeout(size, K_NO_WAIT);
+}
+
+void *BufferPool_Take(size_t size)
+{
+	void *ptr = BufferPool_TryToTake(size);
+
 	if (ptr == NULL) {
 		/* Prevent recursive entry. */
-		if (atomic_get(&takeFailed) == 0) {
-			atomic_set(&takeFailed, 1);
+		if (atomic_get(&take_failed) == 0) {
+			atomic_set(&take_failed, 1);
+			LOG_ERR("Buffer pool too small");
 			FRAMEWORK_ASSERT(FORCED);
 		}
 	}
@@ -58,5 +105,72 @@ void *BufferPool_Take(size_t Size)
 
 void BufferPool_Free(void *pBuffer)
 {
-	k_heap_free(&bufferPool, pBuffer);
+	uint8_t *p = pBuffer;
+	p -= BPH_SIZE;
+
+#ifdef CONFIG_BUFFER_POOL_STATS
+	GiveStatHandler((struct bph *)p);
+#endif
+
+	k_heap_free(&buffer_pool, p);
 }
+
+struct bp_stats *BufferPool_GetStats(uint8_t index)
+{
+	struct bp_stats *p = NULL;
+
+	if (index == 0) {
+		p = &bps;
+	}
+
+	return p;
+}
+
+/******************************************************************************/
+/* Local Function Definitions                                                 */
+/******************************************************************************/
+#ifdef CONFIG_BUFFER_POOL_STATS
+static void TakeStatHandler(struct bph *bph, size_t size)
+{
+	bph->size = size;
+#ifdef CONFIG_BUFFER_POOL_CHECK_DOUBLE_FREE
+	bph->ptr = bph;
+#endif
+
+	bps.space_available -= size;
+	bps.min_space_available =
+		MIN(bps.min_space_available, bps.space_available);
+	bps.min_size = MIN(bps.min_size, size);
+	bps.max_size = MAX(bps.max_size, size);
+	bps.allocs += 1;
+	bps.cur_allocs += 1;
+	bps.max_allocs = MAX(bps.max_allocs, bps.cur_allocs);
+#if CONFIG_BUFFER_POOL_WINDOW_SIZE > 0
+	bps.window[bps.windex++] = size;
+	if (bps.windex >= CONFIG_BUFFER_POOL_WINDOW_SIZE) {
+		bps.windex = 0;
+	}
+#endif
+}
+
+static void GiveStatHandler(struct bph *bph)
+{
+#ifdef CONFIG_BUFFER_POOL_CHECK_DOUBLE_FREE
+	if (bph->ptr == 0) {
+		LOG_ERR("Buffer Pool Possible Duplicate Free");
+	} else if (bph->ptr == bph) {
+		/* This is going back into buffer pool.
+		 * It will either be assigned a new value or remain at 0.
+		 * A breakpoint on this location may point to the wrong offender,
+		 * but still indicates a double free condition.
+		 */
+		bph->ptr = 0;
+	} else {
+		LOG_ERR("Buffer Pool Free Error");
+	}
+#endif
+
+	bps.space_available += bph->size;
+	bps.cur_allocs -= 1;
+}
+#endif
