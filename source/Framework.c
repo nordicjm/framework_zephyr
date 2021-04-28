@@ -109,7 +109,7 @@ BaseType_t Framework_Unicast(FwkMsg_t *pMsg)
 		if (pMsgRxer != NULL && pMsgRxer->pMsgDispatcher != NULL) {
 			/* The handler isn't called here.
 			 * It is only used to find the task the message belongs to. */
-			FwkMsgHandler_t msgHandler =
+			FwkMsgHandler_t *msgHandler =
 				pMsgRxer->pMsgDispatcher(pMsg->header.msgCode);
 
 			/* If there is a dispatcher, then send the message to that task. */
@@ -145,7 +145,7 @@ int Framework_Broadcast(FwkMsg_t *pMsg, size_t MsgSize)
 		if (pMsgRxer != NULL && pMsgRxer->pMsgDispatcher != NULL) {
 			/* The handler isn't called here.  It is only used to determine
 			 * if a task should receive a broadcast message. */
-			FwkMsgHandler_t msgHandler =
+			FwkMsgHandler_t *msgHandler =
 				pMsgRxer->pMsgDispatcher(pMsg->header.msgCode);
 
 			/* If there is a dispatcher,
@@ -254,7 +254,7 @@ void Framework_MsgReceiver(FwkMsgReceiver_t *pRxer)
 		Framework_Receive(pRxer->pQueue, &pMsg, pRxer->rxBlockTicks);
 
 	if ((status == FWK_SUCCESS) && (pMsg != NULL)) {
-		FwkMsgHandler_t msgHandler =
+		FwkMsgHandler_t *msgHandler =
 			pRxer->pMsgDispatcher(pMsg->header.msgCode);
 		if (msgHandler != NULL) {
 			DispatchResult_t result = msgHandler(pRxer, pMsg);

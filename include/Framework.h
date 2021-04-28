@@ -111,9 +111,8 @@ typedef struct FwkBufMsg {
  * affect the time to determine what handler to call.
  */
 typedef struct FwkMsgReceiver FwkMsgReceiver_t;
-typedef DispatchResult_t (*FwkMsgHandler_t)(FwkMsgReceiver_t *pMsgRxer,
-					    FwkMsg_t *pMsg);
-
+typedef DispatchResult_t FwkMsgHandler_t(FwkMsgReceiver_t *pMsgRxer,
+					 FwkMsg_t *pMsg);
 /*
  * Message Framework Receiver Object
  *
@@ -125,7 +124,7 @@ struct FwkMsgReceiver {
 	FwkId_t id;
 	FwkQueue_t *pQueue;
 	TickType_t rxBlockTicks;
-	FwkMsgHandler_t (*pMsgDispatcher)(FwkMsgCode_t msgCode);
+	FwkMsgHandler_t *(*pMsgDispatcher)(FwkMsgCode_t msgCode);
 };
 
 /**
