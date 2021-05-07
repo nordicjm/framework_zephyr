@@ -25,7 +25,8 @@ config FWK_ASSERT_ENABLED
 config FWK_ASSERT_ENABLED_USE_ZEPHYR
      bool "Framework assertion maps to Zephyr assertion"
 	 help
-	 	The framework assertion is enabled if Zephyr assertions are enabled.
+	 	The framework assertion is enabled if
+		Zephyr assertions are enabled.
 
 endchoice
 
@@ -58,7 +59,7 @@ config BUFFER_POOL_STATS
 	bool "Enable buffer pool statistics"
 
 config BUFFER_POOL_WINDOW_SIZE
-	int "Number of entries in buffer pool stats for keeping track of recently used sizes"
+	int "Number of entries in stats of recently used sizes"
 	default 0
 	help
 		Requires 2 bytes per entry
@@ -80,7 +81,8 @@ config BRACKET_INTERCEPTS_ESCAPED_FORWARD_SLASH
 	default y
 	help
 		iOS escapes '/' with "\/"
-		If this is intercepted by the bracket handler,
-		then the buffer sizes don't need to be doubled to handle a base-64 encoded image.
+		If this is intercepted by the bracket handler, then the buffer
+		sizes don't need to be doubled to handle a base-64 encoded
+		image.
 
 endif # FRAMEWORK
