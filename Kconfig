@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020 Laird Connectivity
+# Copyright (c) 2020-2021 Laird Connectivity
 #
 # It is provided "as is", without warranty/guarantee of any kind, express of
 # implied, including but not limited to the warranties of merchantability,
@@ -71,18 +71,5 @@ config BUFFER_POOL_CHECK_DOUBLE_FREE
 
 config BUFFER_POOL_SHELL
 	bool "Enable Buffer Pool Shell"
-
-config BRACKET_HANDLER
-	bool "Enable JSON bracket handler {} module"
-
-config BRACKET_INTERCEPTS_ESCAPED_FORWARD_SLASH
-	bool "Bracket handler replaces '\/' with '/'"
-	depends on BRACKET_HANDLER
-	default y
-	help
-		iOS escapes '/' with "\/"
-		If this is intercepted by the bracket handler, then the buffer
-		sizes don't need to be doubled to handle a base-64 encoded
-		image.
 
 endif # FRAMEWORK

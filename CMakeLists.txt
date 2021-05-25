@@ -7,10 +7,6 @@ zephyr_sources_ifdef(CONFIG_FRAMEWORK
   source/FrameworkStubs.c
 )
 
-zephyr_sources_ifdef(CONFIG_BRACKET_HANDLER
-  source/Bracket.c
-)
-
 zephyr_sources_ifdef(CONFIG_BUFFER_POOL_SHELL
   source/BufferPoolShell.c
 )
