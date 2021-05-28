@@ -56,6 +56,10 @@ static int bp_stats(const struct shell *shell, size_t argc, char **argv)
 			    stats->cur_allocs);
 		shell_print(shell, "max allocations       %d",
 			    stats->max_allocs);
+		shell_print(shell, "take failures         %d",
+			    stats->take_failures);
+		shell_print(shell, "last fail size        %d",
+			    stats->last_fail_size);
 
 #if CONFIG_BUFFER_POOL_WINDOW_SIZE > 0
 		shell_print(shell, "List of recently allocated sizes:");
