@@ -9,7 +9,7 @@
 
 #define FWK_FNAME "BufferPool"
 #include <logging/log.h>
-LOG_MODULE_REGISTER(buffer_pool, LOG_LEVEL_ERR);
+LOG_MODULE_REGISTER(buffer_pool, LOG_LEVEL_WRN);
 
 /******************************************************************************/
 /* Includes                                                                   */
@@ -49,6 +49,7 @@ static struct bp_stats bps;
 /******************************************************************************/
 #ifdef CONFIG_BUFFER_POOL_STATS
 static void TakeStatHandler(struct bph *bph, size_t size);
+static void TakeFailStatHandler(size_t size);
 static void GiveStatHandler(struct bph *bph);
 #endif
 
@@ -67,7 +68,8 @@ void BufferPool_Initialize(void)
 #endif
 }
 
-void *BufferPool_TryToTakeTimeout(size_t size, k_timeout_t timeout)
+void *BufferPool_TryToTakeTimeout(size_t size, k_timeout_t timeout,
+				  const char *const context)
 {
 	size_t size_with_header = size + BPH_SIZE;
 	uint8_t *p = k_heap_alloc(&buffer_pool, size_with_header, timeout);
@@ -79,18 +81,22 @@ void *BufferPool_TryToTakeTimeout(size_t size, k_timeout_t timeout)
 #endif
 		return p + BPH_SIZE;
 	} else {
+		LOG_WRN("Allocate failure size: %d context: %s", size, context);
+#ifdef CONFIG_BUFFER_POOL_STATS
+		TakeFailStatHandler(size);
+#endif
 		return p;
 	}
 }
 
-void *BufferPool_TryToTake(size_t size)
+void *BufferPool_TryToTake(size_t size, const char *const context)
 {
-	return BufferPool_TryToTakeTimeout(size, K_NO_WAIT);
+	return BufferPool_TryToTakeTimeout(size, K_NO_WAIT, context);
 }
 
 void *BufferPool_Take(size_t size)
 {
-	void *ptr = BufferPool_TryToTake(size);
+	void *ptr = BufferPool_TryToTake(size, BP_CONTEXT_UNUSED);
 
 	if (ptr == NULL) {
 		/* Prevent recursive entry. */
@@ -151,6 +157,12 @@ static void TakeStatHandler(struct bph *bph, size_t size)
 		bps.windex = 0;
 	}
 #endif
+}
+
+static void TakeFailStatHandler(size_t size)
+{
+	bps.take_failures += 1;
+	bps.last_fail_size = size;
 }
 
 static void GiveStatHandler(struct bph *bph)

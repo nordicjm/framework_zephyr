@@ -31,11 +31,17 @@ struct bp_stats {
 	int allocs;
 	int cur_allocs;
 	int max_allocs;
+	int take_failures;
+	int last_fail_size;
 #if CONFIG_BUFFER_POOL_WINDOW_SIZE > 0
 	size_t windex;
 	uint16_t window[CONFIG_BUFFER_POOL_WINDOW_SIZE];
 #endif
 };
+
+#define BP_CONTEXT_UNUSED "NA"
+
+#define BP_TRY_TO_TAKE(s) BufferPool_TryToTake(s, __func__)
 
 /******************************************************************************/
 /* Global Function Prototypes                                                 */
@@ -50,15 +56,25 @@ void BufferPool_Initialize(void);
  * size bytes and returns a pointer.
  * The buffer is set to zero.
  * This function won't assert if a buffer can't be taken.
+ *
+ * @param size in bytes
+ * @param timeout zephyr timeout
+ * @param context for printing warning when buffer can't be allocated
+ * @return void*
  */
-void *BufferPool_TryToTakeTimeout(size_t size, k_timeout_t timeout);
+void *BufferPool_TryToTakeTimeout(size_t size, k_timeout_t timeout,
+				  const char *const context);
 
 /**
  * @brief Allocates a buffer of at least size bytes and returns a pointer.
  * The buffer is set to zero.
  * This function won't assert if a buffer can't be taken.
+ *
+ * @param size in bytes
+ * @param context for printing warning when buffer can't be allocated
+ * @return void*
  */
-void *BufferPool_TryToTake(size_t size);
+void *BufferPool_TryToTake(size_t size, const char *const context);
 
 /**
  * @brief Allocates a buffer of at least size bytes and returns a pointer.
