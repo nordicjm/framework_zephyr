@@ -72,6 +72,8 @@ typedef uint8_t FwkId_t;
 #define FMC_SOFTWARE_RESET             2
 #define FMC_WATCHDOG_CHALLENGE         3
 #define FMC_WATCHDOG_RESPONSE          4
+#define FMC_ATTR_CHANGED               5
+#define FMC_FACTORY_RESET              6
 #define FMC_APPLICATION_SPECIFIC_START 8
 /* clang-format on */
 
