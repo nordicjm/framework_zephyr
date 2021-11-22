@@ -125,9 +125,11 @@ struct bp_stats *BufferPool_GetStats(uint8_t index)
 {
 	struct bp_stats *p = NULL;
 
+#ifdef CONFIG_BUFFER_POOL_STATS
 	if (index == 0) {
 		p = &bps;
 	}
+#endif
 
 	return p;
 }
