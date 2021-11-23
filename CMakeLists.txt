@@ -10,3 +10,7 @@ zephyr_sources_ifdef(CONFIG_FRAMEWORK
 zephyr_sources_ifdef(CONFIG_BUFFER_POOL_SHELL
   source/BufferPoolShell.c
 )
+
+if((CONFIG_FRAMEWORK) AND (CONFIG_FWK_AUTO_GENERATE_FILES))
+    include(cmake/framework_gen.cmake)
+endif()

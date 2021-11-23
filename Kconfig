@@ -7,26 +7,26 @@
 #
 
 menuconfig FRAMEWORK
-     bool "Laird Connectivity Message Framework"
-	 help
-	 	Inter-task communication using messages
+	bool "Laird Connectivity Message Framework"
+	help
+	  Inter-task communication using messages
 
 if FRAMEWORK
 
 choice
-     prompt "Framework Assertion"
-     optional
-	 help
-	 	The default is disabled.
+	prompt "Framework Assertion"
+	optional
+	help
+	  The default is disabled.
 
 config FWK_ASSERT_ENABLED
-     bool "Enable Framework assertion"
+	bool "Enable Framework assertion"
 
 config FWK_ASSERT_ENABLED_USE_ZEPHYR
-     bool "Framework assertion maps to Zephyr assertion"
-	 help
-	 	The framework assertion is enabled if
-		Zephyr assertions are enabled.
+	bool "Framework assertion maps to Zephyr assertion"
+	help
+	  The framework assertion is enabled if
+	  Zephyr assertions are enabled.
 
 endchoice
 
@@ -39,7 +39,7 @@ config FWK_ASSERT_ON_BROADCAST_FROM_ISR
 	bool "Assert when a broadcast msg occurs in ISR context"
 	default y
 	help
-		Broadcast can be time consuming on some processors.
+	  Broadcast can be time consuming on some processors.
 
 endif # FWK_ASSERT_ENABLED || FWK_ASSERT_ENABLED_USE_ZEPHYR
 
@@ -62,14 +62,25 @@ config BUFFER_POOL_WINDOW_SIZE
 	int "Number of entries in stats of recently used sizes"
 	default 0
 	help
-		Requires 2 bytes per entry
+	  Requires 2 bytes per entry
 
 config BUFFER_POOL_CHECK_DOUBLE_FREE
 	bool "Print error if duplicate free is detected"
 	help
-		Requires 4 bytes per allocation.
+	  Requires 4 bytes per allocation.
 
 config BUFFER_POOL_SHELL
 	bool "Enable Buffer Pool Shell"
+
+config FWK_AUTO_GENERATE_FILES
+	bool "Generate ID/message file automatically"
+	help
+	  Automatically generates files for IDs and messages that can be
+	  included in projects containing all of the framework IDs and messages
+	  which can come from multiple sources/components. Individual projects
+	  must configure the FWK_ID_FILE_LIST list and FWK_MSG_FILE_LIST list
+	  from their CMake file which must contain lists of files which then
+	  get included in the build. Applications can include framework_ids.h
+	  and framework_msgcodes.h to access these values.
 
 endif # FRAMEWORK
