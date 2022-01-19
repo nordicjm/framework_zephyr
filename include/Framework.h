@@ -2,7 +2,7 @@
  * @file Framework.h
  * @brief Message Framework for intertask communication.
  *
- * Copyright (c) 2021 Laird Connectivity
+ * Copyright (c) 2020-2022 Laird Connectivity
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -77,7 +77,16 @@ typedef uint8_t FwkId_t;
 #define FMC_APPLICATION_SPECIFIC_START 8
 /* clang-format on */
 
-typedef enum FwkStatusEnum { FWK_SUCCESS = 0, FWK_ERROR } FwkStatus_t;
+enum FwkStatusEnum {
+	FWK_SUCCESS = 0,
+	FWK_ERROR,
+};
+
+enum FwkMsgOptionBitmask {
+	FWK_MSG_OPTION_NONE = 0,
+	/* Callback option requires the callback message type to be used */
+	FWK_MSG_OPTION_CALLBACK = BIT(0),
+};
 
 typedef enum DispatchResultEnum {
 	DISPATCH_OK = 0,
@@ -89,7 +98,7 @@ typedef struct FwkMsgHeader {
 	FwkMsgCode_t msgCode;
 	FwkId_t rxId;
 	FwkId_t txId;
-	uint8_t payloadByte; /* for alignment */
+	uint8_t options;
 } FwkMsgHeader_t;
 BUILD_ASSERT(sizeof(FwkMsgHeader_t) == 4, "Unexpected Header Size");
 
@@ -105,6 +114,19 @@ typedef struct FwkBufMsg {
 	size_t length; /** number of used bytes in buffer */
 	uint8_t buffer[]; /** size is determined by allocator */
 } FwkBufMsg_t;
+
+/* Framework callback message
+ *
+ * Callback occurs in msg receiver context.  Receiver may
+ * not know about callback.
+ *
+ * Can be used to give a semaphore or set an event.
+ */
+typedef struct FwkCallbackMsg {
+	FwkMsgHeader_t header;
+	void (*callback)(uint32_t data);
+	uint32_t data;
+} FwkCallbackMsg_t;
 
 /*
  * Each message task has a message handler or dispatcher.
@@ -157,7 +179,7 @@ typedef struct FwkMsgTask {
 
 #define FWK_BUFFER_MSG_SIZE(t, s) (sizeof(t) + (s))
 
-/* Most framework messages are small.  This is a sanity check that at least
+/* Most framework messages are small.  This is a check that at least
  * one message can be allocated in addition to small messages.
  */
 #define CHECK_BUFFER_SIZE(x)                                                   \

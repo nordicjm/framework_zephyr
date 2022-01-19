@@ -6,7 +6,7 @@
  * The convention is to check that messages are pseudo-valid, but assume
  * queue/task objects are valid when framework assertions are turned off.
  *
- * Copyright (c) 2021 Laird Connectivity
+ * Copyright (c) 2020-2022 Laird Connectivity
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -258,6 +258,13 @@ void Framework_MsgReceiver(FwkMsgReceiver_t *pRxer)
 			pRxer->pMsgDispatcher(pMsg->header.msgCode);
 		if (msgHandler != NULL) {
 			DispatchResult_t result = msgHandler(pRxer, pMsg);
+			if (pMsg->header.options & FWK_MSG_OPTION_CALLBACK) {
+				FwkCallbackMsg_t *pCbMsg =
+					(FwkCallbackMsg_t *)pMsg;
+				if (pCbMsg->callback != NULL) {
+					pCbMsg->callback(pCbMsg->data);
+				}
+			}
 			if (result != DISPATCH_DO_NOT_FREE) {
 				BufferPool_Free(pMsg);
 			}

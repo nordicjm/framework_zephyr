@@ -110,6 +110,30 @@ void FwkMsg_Reply(FwkMsg_t *pMsg, FwkMsgCode_t Code)
 	FRAMEWORK_ASSERT(result == FWK_SUCCESS);
 }
 
+void FwkMsg_CallbackCreateAndSend(FwkId_t TxId, FwkId_t RxId, FwkMsgCode_t Code,
+				  void (*Callback)(uint32_t),
+				  uint32_t CallbackData)
+{
+	BaseType_t result = FWK_ERROR;
+	size_t size = sizeof(FwkCallbackMsg_t);
+	FwkCallbackMsg_t *pMsg = BufferPool_Take(size);
+
+	if (pMsg != NULL) {
+		pMsg->header.msgCode = Code;
+		pMsg->header.rxId = RxId;
+		pMsg->header.txId = TxId;
+		pMsg->header.options = FWK_MSG_OPTION_CALLBACK;
+		pMsg->callback = Callback;
+		pMsg->data = CallbackData;
+		if (RxId == FWK_ID_RESERVED) {
+			result = Framework_Unicast((FwkMsg_t *)pMsg);
+		} else {
+			result = Framework_Send(RxId, (FwkMsg_t *)pMsg);
+		}
+		DeallocateOnError((FwkMsg_t *)pMsg, result);
+	}
+}
+
 /******************************************************************************/
 /* Local Function Definitions                                                 */
 /******************************************************************************/

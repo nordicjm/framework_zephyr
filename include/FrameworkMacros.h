@@ -28,6 +28,8 @@ extern "C" {
  * @param txId - The source of the message
  * @param code - The message code
  * @param pMacroMsg - A previously created message that is ready to send.
+ * @param cb - Callback function
+ * @param data - Callback data
  */
 
 #define FRAMEWORK_MSG_SEND_TO_SELF(rxId, code)                                 \
@@ -54,6 +56,12 @@ extern "C" {
 
 #define FRAMEWORK_MSG_REPLY(pMacroMsg, code)                                   \
 	FwkMsg_Reply((FwkMsg_t *)pMacroMsg, code)
+
+#define FRAMEWORK_MSG_CALLBACK_CREATE_AND_SEND(txId, rxId, code, cb, data)     \
+	FwkMsg_CallbackCreateAndSend(txId, rxId, code, cb, data)
+
+#define FRAMEWORK_MSG_CALLBACK_CREATE_AND_UNICAST(txId, code, cb, data)        \
+	FwkMsg_CallbackCreateAndSend(txId, FWK_ID_RESERVED, code, cb, data)
 
 #ifdef __cplusplus
 }

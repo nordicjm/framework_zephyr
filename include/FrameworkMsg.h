@@ -8,7 +8,7 @@
  * @note In FrameworkMacros.h these functions are renamed to be
  * compatible with previous revisions of the framework.
  *
- * Copyright (c) 2020 Laird Connectivity
+ * Copyright (c) 2020-2022 Laird Connectivity
  *
  * SPDX-License-Identifier: Apache-2.0
  */
@@ -33,6 +33,7 @@ extern "C" {
 		p->header.msgCode = (c);                                       \
 		p->header.rxId = FWK_ID_RESERVED;                              \
 		p->header.txId = (i);                                          \
+		p->header.options = FWK_MSG_OPTION_NONE;                       \
 	} while (0)
 
 /******************************************************************************/
@@ -115,6 +116,21 @@ void FwkMsg_CreateAndBroadcast(FwkId_t TxId, FwkMsgCode_t Code);
  * @param Code message type
  */
 void FwkMsg_Reply(FwkMsg_t *pMsg, FwkMsgCode_t Code);
+
+/**
+ * @brief Allocates callback message from buffer pool and sends it
+ *
+ * @param TxId source of message
+ * @param RxId destination of message
+ * @param Code message type
+ * If message type is FWK_ID_RESERVED, then unicast is used.
+ * @param Callback function called in receiver context
+ * @param CallbackData passed into callback function
+ *
+ */
+void FwkMsg_CallbackCreateAndSend(FwkId_t TxId, FwkId_t RxId, FwkMsgCode_t Code,
+				  void (*Callback)(uint32_t),
+				  uint32_t CallbackData);
 
 #ifdef __cplusplus
 }
