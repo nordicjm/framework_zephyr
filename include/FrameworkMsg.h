@@ -44,30 +44,38 @@ extern "C" {
  * @brief Wrapper for Framework_Send
  *
  * @param pMsg pointer to a framework message
+ *
+ * @retval FWK_SUCCESS or FWK_ERROR
  */
-void FwkMsg_Send(FwkMsg_t *pMsg);
+BaseType_t FwkMsg_Send(FwkMsg_t *pMsg);
 
 /**
  * @brief Wrapper for Framework_Send that doesn't assert if dest queue is full.
  *
  * @param pMsg pointer to a framework message
+ *
+ * @retval FWK_SUCCESS or FWK_ERROR
  */
-void FwkMsg_TryToSend(FwkMsg_t *pMsg);
+BaseType_t FwkMsg_TryToSend(FwkMsg_t *pMsg);
 
 /**
  * @brief Wrapper for Framework_Send when used with FRAMEWORK_MSG_HEADER_INIT.
  *
  * @param pMsg pointer to a framework message
  * @param DestId is used to set pMsg->header.rxId
+ *
+ * @retval FWK_SUCCESS or FWK_ERROR
  */
-void FwkMsg_SendTo(FwkMsg_t *pMsg, FwkId_t DestId);
+BaseType_t FwkMsg_SendTo(FwkMsg_t *pMsg, FwkId_t DestId);
 
 /**
  * @brief Wrapper for Framework_Unicast.
  *
  * @param pMsg pointer to a framework message
+ *
+ * @retval FWK_SUCCESS or FWK_ERROR
  */
-void FwkMsg_Unicast(FwkMsg_t *pMsg);
+BaseType_t FwkMsg_Unicast(FwkMsg_t *pMsg);
 
 /**
  * @brief Allocates message from buffer pool and sends it using Framework_Send.
@@ -75,8 +83,10 @@ void FwkMsg_Unicast(FwkMsg_t *pMsg);
  * @param TxId source of message
  * @param RxId destination of message
  * @param Code message type
+ *
+ * @retval FWK_SUCCESS or FWK_ERROR
  */
-void FwkMsg_CreateAndSend(FwkId_t TxId, FwkId_t RxId, FwkMsgCode_t Code);
+BaseType_t FwkMsg_CreateAndSend(FwkId_t TxId, FwkId_t RxId, FwkMsgCode_t Code);
 
 /**
  * @brief Shorter form of FwkMsg_CreateAndSend that can be used by a task to
@@ -84,8 +94,10 @@ void FwkMsg_CreateAndSend(FwkId_t TxId, FwkId_t RxId, FwkMsgCode_t Code);
  *
  * @param Id source and destination of message
  * @param Code message type
+ *
+ * @retval FWK_SUCCESS or FWK_ERROR
  */
-void FwkMsg_CreateAndSendToSelf(FwkId_t Id, FwkMsgCode_t Code);
+BaseType_t FwkMsg_CreateAndSendToSelf(FwkId_t Id, FwkMsgCode_t Code);
 
 /**
  * @brief Allocates message from buffer pool and sends it using
@@ -93,8 +105,10 @@ void FwkMsg_CreateAndSendToSelf(FwkId_t Id, FwkMsgCode_t Code);
  *
  * @param TxId source of message
  * @param Code message type
+ *
+ * @retval FWK_SUCCESS or FWK_ERROR
  */
-void FwkMsg_UnicastCreateAndSend(FwkId_t TxId, FwkMsgCode_t Code);
+BaseType_t FwkMsg_UnicastCreateAndSend(FwkId_t TxId, FwkMsgCode_t Code);
 
 /**
  * @brief Allocates message from buffer pool and broadcasts it using
@@ -102,8 +116,10 @@ void FwkMsg_UnicastCreateAndSend(FwkId_t TxId, FwkMsgCode_t Code);
  *
  * @param TxId source of message
  * @param Code message type
+ *
+ * @retval FWK_SUCCESS or FWK_ERROR
  */
-void FwkMsg_CreateAndBroadcast(FwkId_t TxId, FwkMsgCode_t Code);
+BaseType_t FwkMsg_CreateAndBroadcast(FwkId_t TxId, FwkMsgCode_t Code);
 
 /**
  * @brief Swaps RxId and txId, changes messsage code, and then sends using
@@ -114,8 +130,10 @@ void FwkMsg_CreateAndBroadcast(FwkId_t TxId, FwkMsgCode_t Code);
  *
  * @param pMsg pointer to a framework message
  * @param Code message type
+ *
+ * @retval FWK_SUCCESS or FWK_ERROR
  */
-void FwkMsg_Reply(FwkMsg_t *pMsg, FwkMsgCode_t Code);
+BaseType_t FwkMsg_Reply(FwkMsg_t *pMsg, FwkMsgCode_t Code);
 
 /**
  * @brief Allocates callback message from buffer pool and sends it
@@ -127,10 +145,12 @@ void FwkMsg_Reply(FwkMsg_t *pMsg, FwkMsgCode_t Code);
  * @param Callback function called in receiver context
  * @param CallbackData passed into callback function
  *
+ * @retval FWK_SUCCESS or FWK_ERROR
  */
-void FwkMsg_CallbackCreateAndSend(FwkId_t TxId, FwkId_t RxId, FwkMsgCode_t Code,
-				  void (*Callback)(uint32_t),
-				  uint32_t CallbackData);
+BaseType_t FwkMsg_CallbackCreateAndSend(FwkId_t TxId, FwkId_t RxId,
+					FwkMsgCode_t Code,
+					void (*Callback)(uint32_t),
+					uint32_t CallbackData);
 
 #ifdef __cplusplus
 }
