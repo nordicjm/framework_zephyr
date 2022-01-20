@@ -78,9 +78,15 @@ config FWK_AUTO_GENERATE_FILES
 	  Automatically generates files for IDs and messages that can be
 	  included in projects containing all of the framework IDs and messages
 	  which can come from multiple sources/components. Individual projects
-	  must configure the FWK_ID_FILE_LIST list and FWK_MSG_FILE_LIST list
-	  from their CMake file which must contain lists of files which then
+	  must configure the FWK_ID_FILE_LIST global property list and
+	  FWK_MSG_FILE_LIST global property list from their CMake file (using
+	  set_property() to append) which must contain lists of files which then
 	  get included in the build. Applications can include framework_ids.h
-	  and framework_msgcodes.h to access these values.
+	  and framework_msgcodes.h to access these values. Note that
+	  cmake_functions contains helper functions for adding files using
+	  add_fwk_id_file(file) and add_fwk_msgcode_file(file) - modules using
+	  this must have cmake_functions added to their depends
+	  zephyr/module.yml file and framework must be at the bottom of the west
+	  manifest file.
 
 endif # FRAMEWORK

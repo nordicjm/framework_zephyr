@@ -1,5 +1,7 @@
 
 # Check required parameters have been supplied
+get_property(FWK_ID_FILE_LIST GLOBAL PROPERTY FWK_ID_FILE_LIST)
+get_property(FWK_MSG_FILE_LIST GLOBAL PROPERTY FWK_MSG_FILE_LIST)
 if(NOT DEFINED FWK_ID_FILE_LIST)
     message(FATAL_ERROR "FWK_ID_FILE_LIST variable is not set, this must contain the input file list of framework IDs")
 endif()
