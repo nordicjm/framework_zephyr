@@ -21,6 +21,11 @@
 #include "BufferPool.h"
 #include "Framework.h"
 
+#ifdef CONFIG_FWK_AUTO_GENERATE_FILES
+#include <framework_ids.h>
+#include <framework_msgcodes.h>
+#endif
+
 /******************************************************************************/
 /* Local Constant, Macro and Type Definitions                                 */
 /******************************************************************************/
