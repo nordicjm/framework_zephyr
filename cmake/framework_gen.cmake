@@ -44,6 +44,9 @@ set(GENERATED_PATH ${PROJECT_BINARY_DIR}/framework)
 # Create framework folder
 file(MAKE_DIRECTORY ${GENERATED_PATH})
 
+# Remove previous file if present
+file(REMOVE ${GENERATED_PATH}/framework_ids.h ${GENERATED_PATH}/framework_msgcodes.h)
+
 # IDs
 
 # Add header
