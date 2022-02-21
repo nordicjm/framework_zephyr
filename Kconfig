@@ -89,4 +89,13 @@ config FWK_AUTO_GENERATE_FILES
 	  zephyr/module.yml file and framework must be at the bottom of the west
 	  manifest file.
 
+if FWK_AUTO_GENERATE_FILES
+
+config FWK_SENSOR
+	bool "Include sensor framework message codes"
+	help
+	  Includes framework message codes that can be used by sensors.
+
+endif # FWK_AUTO_GENERATE_FILES
+
 endif # FRAMEWORK
