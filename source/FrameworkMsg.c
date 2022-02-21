@@ -14,6 +14,10 @@
 #include "Framework.h"
 #include "FrameworkMsg.h"
 
+#ifdef CONFIG_FILTER
+#include <framework_ids.h>
+#endif
+
 /******************************************************************************/
 /* Local Function Prototypes                                                  */
 /******************************************************************************/
@@ -161,6 +165,33 @@ BaseType_t FwkMsg_CallbackCreateAndSend(FwkId_t TxId, FwkId_t RxId,
 		}
 		DeallocateOnError((FwkMsg_t *)pMsg, result);
 	}
+
+	return result;
+}
+
+BaseType_t FwkMsg_FilteredTargettedSend(FwkMsg_t *pMsg, FwkId_t *TargetID,
+					size_t MsgSize)
+{
+	BaseType_t result;
+
+	if (TargetID == NULL) {
+#ifdef CONFIG_FILTER
+		/* With filtering, send targetted message to filter */
+		pMsg->header.rxId = FWK_ID_EVENT_FILTER;
+		result = Framework_Send(FWK_ID_EVENT_FILTER, pMsg);
+#else
+		/* Without filtering, send broadcast */
+		pMsg->header.rxId = FWK_ID_RESERVED;
+		result = Framework_Broadcast(pMsg, MsgSize);
+#endif
+	} else {
+		/* Targetted message, send only to target */
+		pMsg->header.rxId = *TargetID;
+		result = Framework_Send(*TargetID, pMsg);
+	}
+
+	DeallocateOnError(pMsg, result);
+	FRAMEWORK_ASSERT(result == FWK_SUCCESS);
 
 	return result;
 }
